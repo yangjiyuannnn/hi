@@ -7,7 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1GG-vAiZGvFecbG7SwO58cLhvDafRvzd7
 """
 
-pip install nltk
+!pip install nltk
 
 !pip install streamlit
 # Import basic libraries
