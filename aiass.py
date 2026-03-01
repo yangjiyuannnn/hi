@@ -5,7 +5,7 @@ import nltk
 import numpy as np
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-
+import matplotlib.pyplot as plt
 # Load trained model and vectorizer
 model = pickle.load(open("final_model.pkl", "rb"))
 vectorizer = pickle.load(open("tfidf_vectorizer.pkl", "rb"))
@@ -107,3 +107,20 @@ if "history" in st.session_state and len(st.session_state.history) > 0:
 
     for i, (text, pred) in enumerate(reversed(st.session_state.history[-5:])):
         st.write(f"{i+1}. {text} → {pred}")
+
+st.session_state.history.append((user_input, prediction))
+# Count prediction types
+counts = {"Positive": 0, "Negative": 0, "Toxic": 0}
+
+for _, pred in st.session_state.history:
+    counts[pred] += 1
+
+st.subheader("Prediction Statistics")
+
+# Create bar chart
+fig, ax = plt.subplots()
+ax.bar(counts.keys(), counts.values())
+ax.set_ylabel("Number of Predictions")
+ax.set_title("Prediction Distribution")
+
+st.pyplot(fig)
