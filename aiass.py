@@ -96,38 +96,40 @@ if st.button("Predict Comment Type"):
 
     if user_input.strip() != "":
 
+        # detect neutral word
         if len(user_input.split()) <= 1:
             st.info("Neutral / No Sentiment Detected")
 
+        else:
+            cleaned = clean_text(user_input)
+            input_vector = vectorizer.transform([cleaned])
+            prediction = model.predict(input_vector)[0]
 
-        elif cleaned = clean_text(user_input)
-             input_vector = vectorizer.transform([cleaned])
-             prediction = model.predict(input_vector)[0]
+            # Confidence
+            decision_scores = model.decision_function(input_vector)
+            confidence = float(np.max(np.abs(decision_scores)))
 
-        # Confidence (approximation using decision score)
-             decision_scores = model.decision_function(input_vector)
-             confidence = float(np.max(np.abs(decision_scores)))
-
-             st.subheader("Prediction Result")
+            st.subheader("Prediction Result")
 
             if prediction == "Positive":
                 st.success("🟢 Positive")
+
             elif prediction == "Negative":
                 st.warning("🟠 Negative")
+
             else:
-            st.error("🔴 Toxic")
+                st.error("🔴 Toxic")
 
             st.write(f"Confidence Score: {round(confidence, 2)}")
 
             st.subheader("Cleaned Text")
             st.info(cleaned)
 
-        # Save to history
+            # Save history
             st.session_state.history.append((user_input, prediction))
 
-        else:
-            st.warning("Please enter a comment.")
-
+    else:
+        st.warning("Please enter a comment.")
 # ---------------------------
 # Prediction History
 # ---------------------------
