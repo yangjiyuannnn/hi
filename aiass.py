@@ -96,20 +96,18 @@ if st.button("Predict Comment Type"):
 
     if user_input.strip() != "":
 
-        cleaned = clean_text(user_input)
-        input_vector = vectorizer.transform([cleaned])
-
-        prediction = model.predict(input_vector)[0]
-
-        # get confidence score
-        decision_scores = model.decision_function(input_vector)
-        confidence = float(np.max(np.abs(decision_scores)))
-
-        # threshold for neutral
-        if confidence < 0.5:
+        # detect neutral sentence
+        if len(user_input.split()) <= 3:
             st.info("⚪ Neutral / No Strong Sentiment")
 
         else:
+            cleaned = clean_text(user_input)
+            input_vector = vectorizer.transform([cleaned])
+            prediction = model.predict(input_vector)[0]
+
+            decision_scores = model.decision_function(input_vector)
+            confidence = float(np.max(np.abs(decision_scores)))
+
             st.subheader("Prediction Result")
 
             if prediction == "Positive":
@@ -121,7 +119,12 @@ if st.button("Predict Comment Type"):
             else:
                 st.error("🔴 Toxic")
 
-        st.write(f"Confidence Score: {round(confidence,2)}")
+            st.write(f"Confidence Score: {round(confidence,2)}")
+
+            st.subheader("Cleaned Text")
+            st.info(cleaned)
+
+            st.session_state.history.append((user_input, prediction))
 
     else:
         st.warning("Please enter a comment.")
