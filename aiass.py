@@ -119,23 +119,65 @@ user_input = st.text_area(
 # ---------------------------
 # Prediction
 # ---------------------------
+# ---------------------------
+# Prediction
+# ---------------------------
 if st.button("Predict Comment Type"):
 
     if user_input.strip() != "":
 
+        st.subheader("🔎 NLP Processing Steps")
+
         text_lower = user_input.lower()
 
-        # 1️⃣ Toxic keyword detection
+        # ---------------------------
+        # Step 1 Original Text
+        # ---------------------------
+        st.write("Original Text:")
+        st.info(user_input)
+
+        # ---------------------------
+        # Step 2 Tokenization
+        # ---------------------------
+        tokens = text_lower.split()
+        st.write("Tokenization:")
+        st.write(tokens)
+
+        # ---------------------------
+        # Step 3 Stopword Removal
+        # ---------------------------
+        tokens_no_stop = [word for word in tokens if word not in stop_words]
+        st.write("After Stopword Removal:")
+        st.write(tokens_no_stop)
+
+        # ---------------------------
+        # Step 4 Lemmatization
+        # ---------------------------
+        lemmatized = [lemmatizer.lemmatize(word) for word in tokens_no_stop]
+        st.write("After Lemmatization:")
+        st.write(lemmatized)
+
+        # ---------------------------
+        # Step 5 Cleaned Text
+        # ---------------------------
+        cleaned = " ".join(lemmatized)
+        st.write("Cleaned Text:")
+        st.info(cleaned)
+
+        # ---------------------------
+        # Prediction Logic
+        # ---------------------------
+
         if any(word in text_lower for word in toxic_words):
 
             prediction = "Toxic"
             confidence = 1.0
-        # Negative complaint detection
+
         elif any(word in text_lower for word in negative_keywords):
 
             prediction = "Negative"
             confidence = 0.9
-        # 2️⃣ Short sentence neutral
+
         elif len(user_input.split()) <= 2:
 
             prediction = "Neutral"
@@ -143,14 +185,16 @@ if st.button("Predict Comment Type"):
 
         else:
 
-            cleaned = clean_text(user_input)
             input_vector = vectorizer.transform([cleaned])
+
+            st.write("TF-IDF Vector Shape:")
+            st.write(input_vector.shape)
+
             prediction = model.predict(input_vector)[0]
 
             decision_scores = model.decision_function(input_vector)
             confidence = float(np.max(np.abs(decision_scores)))
 
-            # 3️⃣ Toxic fallback fix
             if prediction == "Toxic":
                 prediction = "Neutral"
 
@@ -173,11 +217,10 @@ if st.button("Predict Comment Type"):
 
         st.write(f"Confidence Score: {round(confidence,2)}")
 
-        # Save history
         st.session_state.history.append((user_input, prediction))
 
     else:
-        st.warning("Please enter a sentence.")
+        st.warning("Please enter a sentence.")warning("Please enter a sentence.")
 
 # ---------------------------
 # Prediction History
