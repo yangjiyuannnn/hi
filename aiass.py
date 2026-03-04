@@ -100,16 +100,15 @@ if st.button("Predict Comment Type"):
             st.info("Neutral / No Sentiment Detected")
 
 
-        elif:
-            cleaned = clean_text(user_input)
-            input_vector = vectorizer.transform([cleaned])
-            prediction = model.predict(input_vector)[0]
+        elif cleaned = clean_text(user_input)
+             input_vector = vectorizer.transform([cleaned])
+             prediction = model.predict(input_vector)[0]
 
         # Confidence (approximation using decision score)
-            decision_scores = model.decision_function(input_vector)
-            confidence = float(np.max(np.abs(decision_scores)))
+             decision_scores = model.decision_function(input_vector)
+             confidence = float(np.max(np.abs(decision_scores)))
 
-            st.subheader("Prediction Result")
+             st.subheader("Prediction Result")
 
             if prediction == "Positive":
                 st.success("🟢 Positive")
