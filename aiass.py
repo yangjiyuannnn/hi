@@ -32,15 +32,25 @@ if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
 # ---------------------------
+# Toxic Keywords
+# ---------------------------
+toxic_words = [
+    "fuck","shit","bitch","idiot","stupid",
+    "trash","garbage","asshole","bastard"
+]
+
+# ---------------------------
 # Text Cleaning Function
 # ---------------------------
 def clean_text(text):
     text = text.lower()
     text = re.sub(r"http\S+", "", text)
     text = re.sub(r"[^a-zA-Z\s]", "", text)
+
     words = text.split()
     words = [word for word in words if word not in stop_words]
     words = [lemmatizer.lemmatize(word) for word in words]
+
     return " ".join(words)
 
 # ---------------------------
@@ -50,11 +60,12 @@ st.title("🚗 Car Review NLP Classification System")
 
 st.markdown("""
 ### 📌 About This System
-This NLP system classifies car review comments into:
+This NLP system classifies text into:
 
 - 🟢 **Positive**
 - 🟠 **Negative**
 - 🔴 **Toxic**
+- ⚪ **Neutral**
 
 Model Used: LinearSVC  
 Vectorization: TF-IDF
@@ -82,10 +93,10 @@ with col3:
 # ---------------------------
 # User Input
 # ---------------------------
-st.subheader("Enter Your Car Review")
+st.subheader("Enter Your Sentence")
 
 user_input = st.text_area(
-    "Type your comment here:",
+    "Type your sentence here:",
     value=st.session_state.input_text
 )
 
@@ -96,11 +107,22 @@ if st.button("Predict Comment Type"):
 
     if user_input.strip() != "":
 
-        # detect neutral sentence
-        if len(user_input.split()) <= 2:
-            st.info("⚪ Neutral / No Strong Sentiment")
+        text_lower = user_input.lower()
+
+        # 1️⃣ Toxic keyword detection
+        if any(word in text_lower for word in toxic_words):
+
+            prediction = "Toxic"
+            confidence = 1.0
+
+        # 2️⃣ Short sentence neutral
+        elif len(user_input.split()) <= 2:
+
+            prediction = "Neutral"
+            confidence = 0.5
 
         else:
+
             cleaned = clean_text(user_input)
             input_vector = vectorizer.transform([cleaned])
             prediction = model.predict(input_vector)[0]
@@ -108,26 +130,35 @@ if st.button("Predict Comment Type"):
             decision_scores = model.decision_function(input_vector)
             confidence = float(np.max(np.abs(decision_scores)))
 
-            st.subheader("Prediction Result")
+            # 3️⃣ Toxic fallback fix
+            if prediction == "Toxic":
+                prediction = "Neutral"
 
-            if prediction == "Positive":
-                st.success("🟢 Positive")
+        # ---------------------------
+        # Display Result
+        # ---------------------------
+        st.subheader("Prediction Result")
 
-            elif prediction == "Negative":
-                st.warning("🟠 Negative")
+        if prediction == "Positive":
+            st.success("🟢 Positive")
 
-            else:
-                st.error("🔴 Toxic")
+        elif prediction == "Negative":
+            st.warning("🟠 Negative")
 
-            st.write(f"Confidence Score: {round(confidence,2)}")
+        elif prediction == "Neutral":
+            st.info("⚪ Neutral")
 
-            st.subheader("Cleaned Text")
-            st.info(cleaned)
+        else:
+            st.error("🔴 Toxic")
 
-            st.session_state.history.append((user_input, prediction))
+        st.write(f"Confidence Score: {round(confidence,2)}")
+
+        # Save history
+        st.session_state.history.append((user_input, prediction))
 
     else:
-        st.warning("Please enter a comment.")
+        st.warning("Please enter a sentence.")
+
 # ---------------------------
 # Prediction History
 # ---------------------------
@@ -145,7 +176,12 @@ if len(st.session_state.history) > 0:
 # ---------------------------
 if len(st.session_state.history) > 0:
 
-    counts = {"Positive": 0, "Negative": 0, "Toxic": 0}
+    counts = {
+        "Positive":0,
+        "Negative":0,
+        "Toxic":0,
+        "Neutral":0
+    }
 
     for _, pred in st.session_state.history:
         counts[pred] += 1
@@ -153,10 +189,12 @@ if len(st.session_state.history) > 0:
     st.subheader("📊 Prediction Statistics")
 
     fig, ax = plt.subplots()
+
     ax.bar(
         counts.keys(),
-        counts.values(),
+        counts.values()
     )
+
     ax.set_ylabel("Number of Predictions")
     ax.set_title("Prediction Distribution")
 
