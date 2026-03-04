@@ -97,7 +97,7 @@ if st.button("Predict Comment Type"):
     if user_input.strip() != "":
 
         # detect neutral sentence
-        if len(user_input.split()) <= 3:
+        if len(user_input.split()) <= 2:
             st.info("⚪ Neutral / No Strong Sentiment")
 
         else:
