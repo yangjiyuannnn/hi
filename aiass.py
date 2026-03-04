@@ -114,7 +114,11 @@ if st.button("Predict Comment Type"):
 
             prediction = "Toxic"
             confidence = 1.0
+        # Negative complaint detection
+        elif any(word in text_lower for word in negative_keywords):
 
+            prediction = "Negative"
+            confidence = 0.9
         # 2️⃣ Short sentence neutral
         elif len(user_input.split()) <= 2:
 
