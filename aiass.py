@@ -96,7 +96,12 @@ if st.button("Predict Comment Type"):
 
     if user_input.strip() != "":
 
-        cleaned = clean_text(user_input)
+        if len(user_input.split()) <= 1:
+            st.info("Neutral / No Sentiment Detected")
+
+
+        else:
+            cleaned = clean_text(user_input)
         input_vector = vectorizer.transform([cleaned])
         prediction = model.predict(input_vector)[0]
 
