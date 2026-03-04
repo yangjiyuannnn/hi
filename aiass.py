@@ -220,7 +220,7 @@ if st.button("Predict Comment Type"):
         st.session_state.history.append((user_input, prediction))
 
     else:
-        st.warning("Please enter a sentence.")warning("Please enter a sentence.")
+        st.warning("Please enter a sentence.")
 
 # ---------------------------
 # Prediction History
