@@ -72,7 +72,7 @@ def clean_text(text):
 # ---------------------------
 # Page Layout
 # ---------------------------
-st.title("🚗 Car Review NLP Classification System")
+st.title(" Review NLP Classification System")
 
 st.markdown("""
 ### 📌 About This System
