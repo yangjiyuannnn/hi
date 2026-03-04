@@ -38,7 +38,23 @@ toxic_words = [
     "fuck","shit","bitch","idiot","stupid",
     "trash","garbage","asshole","bastard"
 ]
-
+negative_keywords = [
+"too expensive",
+"too slow",
+"too high",
+"too low",
+"too noisy",
+"too heavy",
+"too big",
+"too small",
+"maintenance cost",
+"fuel consumption",
+"fuel economy",
+"engine problem",
+"poor performance",
+"bad quality",
+"not reliable"
+]
 # ---------------------------
 # Text Cleaning Function
 # ---------------------------
