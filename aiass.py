@@ -160,7 +160,7 @@ if st.button("Predict Comment Type"):
         # ---------------------------
         # Prediction Logic
         # ---------------------------
-
+        confidence = 0.0
         if any(word in text_lower for word in toxic_words):
 
             prediction = "Toxic"
