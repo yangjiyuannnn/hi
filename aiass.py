@@ -40,7 +40,7 @@ toxic_words = [
 ]
 negative_words = [
 "bad","poor","terrible","awful","disappointing","worse","worst","expensive","slow","noisy","heavy"
-,"weak","problem","issue","fault","broken","unstable","cheap","ugly","delay","damage","defect"
+,"weak","problem","issue","fault","broken","unstable","cheap","ugly","delay","damage","defect",
 ]
 
 positive_words = [
