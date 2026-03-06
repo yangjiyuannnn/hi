@@ -47,10 +47,7 @@ positive_words = [
 "good","great","excellent","amazing","awesome","nice","love","like","perfect","fantastic","wonderful","best",
 "happy","satisfied","reliable","smooth","comfortable","affordable","cheap","value","quality","fast","easy","stable"
 ]
-tokens = user_input.lower().split()
 
-has_positive = any(word in text for word in positive_words)
-has_negative = any(word in text for word in negative_words)
 # ---------------------------
 # Text Cleaning Function
 # ---------------------------
@@ -178,7 +175,7 @@ if st.button("Predict Comment Type"):
             prediction = "Positive"
             confidence = 0.9
             
-        elif has_positive and has_negative:
+        elif any(word in tokens for word in positive_words) and any(word in text_lower for word in negative_words):
             
             prediction = "Neutral"
             confidence = 0.8
