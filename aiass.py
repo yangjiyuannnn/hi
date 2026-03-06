@@ -39,22 +39,17 @@ toxic_words = [
     "trash","garbage","asshole","bastard"
 ]
 negative_keywords = [
-"too expensive",
-"too slow",
-"too high",
-"too low",
-"too noisy",
-"too heavy",
-"too big",
-"too small",
-"maintenance cost",
-"fuel consumption",
-"fuel economy",
-"engine problem",
-"poor performance",
-"bad quality",
-"not reliable"
+"bad","poor","terrible","awful","disappointing","worse","worst","expensive","slow","noisy","heavy"
+,"weak","problem","issue","fault","broken","unstable","cheap","ugly","delay","damage","defect"
 ]
+
+positive_keywords = [
+"good","great","excellent","amazing","awesome","nice","love","like","perfect","fantastic","wonderful","best",
+"happy","satisfied","reliable","smooth","comfortable","affordable","cheap","value","quality","fast","easy","stable"
+]
+
+has_positive = any(word in text for word in positive_words)
+has_negative = any(word in text for word in negative_words)
 # ---------------------------
 # Text Cleaning Function
 # ---------------------------
@@ -177,11 +172,15 @@ if st.button("Predict Comment Type"):
 
             prediction = "Negative"
             confidence = 0.9
-
-        elif len(user_input.split()) <= 2:
-
+        elif any(word in tokens for word in positive_keywords):
+   
+            prediction = "Positive"
+            confidence = 0.9
+            
+        elif has_positive and has_negative:
+            
             prediction = "Neutral"
-            confidence = 0.5
+            confidence = 0.8
 
         else:
 
