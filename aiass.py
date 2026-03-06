@@ -165,6 +165,12 @@ if st.button("Predict Comment Type"):
 
             prediction = "Toxic"
             confidence = 1.0
+            
+        elif any(word in tokens for word in positive_words) and any(word in text_lower for word in negative_words):
+            
+            prediction = "Neutral"
+            confidence = 0.8
+
 
         elif any(word in text_lower for word in negative_words):
 
@@ -175,11 +181,7 @@ if st.button("Predict Comment Type"):
             prediction = "Positive"
             confidence = 0.9
             
-        elif any(word in tokens for word in positive_words) and any(word in text_lower for word in negative_words):
-            
-            prediction = "Neutral"
-            confidence = 0.8
-
+        
         else:
 
             input_vector = vectorizer.transform([cleaned])
