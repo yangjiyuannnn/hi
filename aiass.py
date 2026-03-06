@@ -170,11 +170,6 @@ if st.button("Predict Comment Type"):
             
             prediction = "Neutral"
             confidence = 0.8
-        elif "lower" in tokens and "price" in tokens:
-            prediction = "Positive"
-
-        elif "higher" in tokens and "price" in tokens:
-            prediction = "Negative"
 
 
         elif any(word in text_lower for word in negative_words):
