@@ -47,6 +47,7 @@ positive_words = [
 "good","great","excellent","amazing","awesome","nice","love","like","perfect","fantastic","wonderful","best",
 "happy","satisfied","reliable","smooth","comfortable","affordable","cheap","value","quality","fast","easy","stable"
 ]
+tokens = user_input.lower().split()
 
 has_positive = any(word in text for word in positive_words)
 has_negative = any(word in text for word in negative_words)
