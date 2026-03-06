@@ -38,12 +38,12 @@ toxic_words = [
     "fuck","shit","bitch","idiot","stupid",
     "trash","garbage","asshole","bastard"
 ]
-negative_keywords = [
+negative_words = [
 "bad","poor","terrible","awful","disappointing","worse","worst","expensive","slow","noisy","heavy"
 ,"weak","problem","issue","fault","broken","unstable","cheap","ugly","delay","damage","defect"
 ]
 
-positive_keywords = [
+positive_words = [
 "good","great","excellent","amazing","awesome","nice","love","like","perfect","fantastic","wonderful","best",
 "happy","satisfied","reliable","smooth","comfortable","affordable","cheap","value","quality","fast","easy","stable"
 ]
@@ -168,11 +168,11 @@ if st.button("Predict Comment Type"):
             prediction = "Toxic"
             confidence = 1.0
 
-        elif any(word in text_lower for word in negative_keywords):
+        elif any(word in text_lower for word in negative_words):
 
             prediction = "Negative"
             confidence = 0.9
-        elif any(word in tokens for word in positive_keywords):
+        elif any(word in tokens for word in positive_words):
    
             prediction = "Positive"
             confidence = 0.9
