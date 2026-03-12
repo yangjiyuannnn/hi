@@ -29,6 +29,9 @@ lemmatizer = WordNetLemmatizer()
 if "history" not in st.session_state:
     st.session_state.history = []
 
+if "input_text" not in st.session_state:
+    st.session_state.input_text = ""
+
 # ---------------------------
 # Text Cleaning
 # ---------------------------
@@ -60,7 +63,7 @@ This NLP system classifies text into:
 - ⚪ **Neutral**
 
 Model Used: **LinearSVC**  
-Feature Extraction: **TF-IDF**
+Vectorization: **TF-IDF**
 """)
 
 # ---------------------------
@@ -81,16 +84,17 @@ Sentiment Prediction
 """)
 
 # ---------------------------
-# Model Information
+# Model Info
 # ---------------------------
 st.subheader("Model Information")
 
 st.write("Model Type: LinearSVC")
-st.write("Vectorization: TF-IDF")
 
 vocab_size = len(vectorizer.get_feature_names_out())
 
 st.write("Vocabulary Size:", vocab_size)
+
+st.write("Feature Type: TF-IDF")
 
 # ---------------------------
 # Example Buttons
@@ -101,15 +105,15 @@ col1,col2,col3 = st.columns(3)
 
 with col1:
     if st.button("Positive Example"):
-        st.session_state.input = "This phone works perfectly"
+        st.session_state.input_text = "This phone works perfectly"
 
 with col2:
     if st.button("Negative Example"):
-        st.session_state.input = "The price is too expensive"
+        st.session_state.input_text = "The price is too expensive"
 
 with col3:
     if st.button("Neutral Example"):
-        st.session_state.input = "The meeting is tomorrow"
+        st.session_state.input_text = "The meeting is tomorrow"
 
 # ---------------------------
 # User Input
@@ -118,7 +122,7 @@ st.subheader("Enter Your Comment")
 
 user_input = st.text_area(
     "Type your sentence:",
-    value=st.session_state.get("input","")
+    value=st.session_state.input_text
 )
 
 # ---------------------------
@@ -126,11 +130,11 @@ user_input = st.text_area(
 # ---------------------------
 if st.button("Predict"):
 
-    if user_input.strip()!="":
+    if user_input.strip() != "":
 
         st.subheader("NLP Processing Steps")
 
-        # Original
+        # Original text
         st.write("Original Text:")
         st.info(user_input)
 
@@ -154,7 +158,7 @@ if st.button("Predict"):
         st.write("Cleaned Text:")
         st.info(cleaned)
 
-        # TF-IDF vector
+        # TF-IDF
         input_vector = vectorizer.transform([cleaned])
 
         st.write("TF-IDF Vector Shape:")
@@ -163,37 +167,51 @@ if st.button("Predict"):
         st.write("TF-IDF Vector Sample:")
         st.write(input_vector.toarray()[0][:20])
 
-        # Top Features
+        # Vocabulary check
+        if input_vector.nnz == 0:
+            st.warning("⚠ No known vocabulary detected")
+
+        # Top features
         feature_names = vectorizer.get_feature_names_out()
 
         nonzero = input_vector.nonzero()[1]
 
         top_features = [feature_names[i] for i in nonzero[:10]]
 
-        st.write("Top TF-IDF Features:")
-        st.write(top_features)
+        st.write("Top Influential Words:")
+
+        for word in top_features:
+            st.write("•",word)
 
         # Prediction
-        prediction = model.predict(input_vector)[0]
+        prediction = str(model.predict(input_vector)[0])
 
-        # Confidence
         decision_scores = model.decision_function(input_vector)
 
         confidence = float(np.max(np.abs(decision_scores)))
 
-        # Display
+        # ---------------------------
+        # Display Result
+        # ---------------------------
         st.subheader("Prediction Result")
 
-        if prediction == 2:
-            st.success("🟢 Positive")
+        if prediction == "Positive":
+            st.success("🟢 Positive Sentiment")
 
-        elif prediction == 0:
-            st.warning("🟠 Negative")
+        elif prediction == "Negative":
+            st.warning("🟠 Negative Sentiment")
 
         else:
-            st.info("⚪ Neutral")
+            st.info("⚪ Neutral Statement")
 
         st.write("Confidence Score:",round(confidence,2))
+
+        # Confidence bar
+        confidence_norm = min(confidence / 2, 1)
+
+        st.progress(confidence_norm)
+
+        st.caption("Prediction Confidence")
 
         st.session_state.history.append((user_input,prediction))
 
@@ -203,20 +221,19 @@ if st.button("Predict"):
 # ---------------------------
 # Prediction History
 # ---------------------------
-if len(st.session_state.history)>0:
+if len(st.session_state.history) > 0:
 
     st.subheader("Prediction History")
 
     for i,(text,pred) in enumerate(
         reversed(st.session_state.history[-5:])
     ):
-
-        st.write(f"{i+1}. {text}")
+        st.write(f"{i+1}. {text} → {pred}")
 
 # ---------------------------
 # Statistics Chart
 # ---------------------------
-if len(st.session_state.history)>0:
+if len(st.session_state.history) > 0:
 
     counts = {
         "Positive":0,
@@ -226,18 +243,20 @@ if len(st.session_state.history)>0:
 
     for _,pred in st.session_state.history:
 
-        if pred==2:
-            counts["Positive"]+=1
-        elif pred==0:
-            counts["Negative"]+=1
+        if pred == "Positive":
+            counts["Positive"] += 1
+
+        elif pred == "Negative":
+            counts["Negative"] += 1
+
         else:
-            counts["Neutral"]+=1
+            counts["Neutral"] += 1
 
     st.subheader("Prediction Statistics")
 
     fig,ax = plt.subplots()
 
-    colors = ["green","orange","gray"]
+    colors = ["#2ecc71","#e67e22","#95a5a6"]
 
     ax.bar(
         counts.keys(),
@@ -245,7 +264,8 @@ if len(st.session_state.history)>0:
         color=colors
     )
 
-    ax.set_ylabel("Predictions")
+    ax.set_ylabel("Number of Predictions")
+
     ax.set_title("Sentiment Distribution")
 
     st.pyplot(fig)
