@@ -158,7 +158,9 @@ if st.button("Predict"):
         st.write("Cleaned Text:")
         st.info(cleaned)
 
-    
+        # TF-IDF
+        input_vector = vectorizer.transform([cleaned])
+
 
         # Vocabulary check
         if input_vector.nnz == 0:
