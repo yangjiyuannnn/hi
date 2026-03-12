@@ -4,265 +4,248 @@ import re
 import nltk
 import numpy as np
 import matplotlib.pyplot as plt
+
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
 # ---------------------------
-# Load Model & Vectorizer
+# Load Model
 # ---------------------------
-model = pickle.load(open("final_model.pkl", "rb"))
-vectorizer = pickle.load(open("tfidf_vectorizer.pkl", "rb"))
+model = pickle.load(open("final_model.pkl","rb"))
+vectorizer = pickle.load(open("tfidf_vectorizer.pkl","rb"))
 
 # ---------------------------
 # NLTK Setup
 # ---------------------------
-nltk.download("stopwords", quiet=True)
-nltk.download("wordnet", quiet=True)
+nltk.download("stopwords",quiet=True)
+nltk.download("wordnet",quiet=True)
 
 stop_words = set(stopwords.words("english"))
 lemmatizer = WordNetLemmatizer()
 
 # ---------------------------
-# Initialize Session State
+# Session State
 # ---------------------------
 if "history" not in st.session_state:
     st.session_state.history = []
 
-if "input_text" not in st.session_state:
-    st.session_state.input_text = ""
-
 # ---------------------------
-# Toxic Keywords
-# ---------------------------
-toxic_words = [
-    "fuck","shit","bitch","idiot","stupid",
-    "trash","garbage","asshole","bastard"
-]
-negative_words = [
-"bad","poor","terrible","awful","disappointing","worse","worst","expensive","slow","noisy","heavy"
-,"weak","problem","issue","fault","broken","unstable","cheap","ugly","delay","damage","defect",
-]
-
-positive_words = [
-"good","great","excellent","amazing","awesome","nice","love","like","perfect","fantastic","wonderful","best",
-"happy","satisfied","reliable","smooth","comfortable","affordable","cheap","value","quality","fast","easy","stable"
-]
-
-# ---------------------------
-# Text Cleaning Function
+# Text Cleaning
 # ---------------------------
 def clean_text(text):
+
     text = text.lower()
-    text = re.sub(r"http\S+", "", text)
-    text = re.sub(r"[^a-zA-Z\s]", "", text)
+
+    text = re.sub(r"http\S+","",text)
+    text = re.sub(r"[^a-zA-Z\s]","",text)
 
     words = text.split()
-    words = [word for word in words if word not in stop_words]
-    words = [lemmatizer.lemmatize(word) for word in words]
+
+    words = [w for w in words if w not in stop_words]
+
+    words = [lemmatizer.lemmatize(w) for w in words]
 
     return " ".join(words)
 
 # ---------------------------
-# Page Layout
+# Title
 # ---------------------------
-st.title(" Review NLP Classification System")
+st.title("NLP Review Classification System")
 
 st.markdown("""
-### 📌 About This System
 This NLP system classifies text into:
 
 - 🟢 **Positive**
 - 🟠 **Negative**
-- 🔴 **Toxic**
 - ⚪ **Neutral**
 
-Model Used: LinearSVC  
-Vectorization: TF-IDF
+Model Used: **LinearSVC**  
+Feature Extraction: **TF-IDF**
 """)
+
+# ---------------------------
+# NLP Pipeline
+# ---------------------------
+st.subheader("NLP Pipeline")
+
+st.markdown("""
+User Comment  
+⬇  
+Text Preprocessing  
+⬇  
+TF-IDF Feature Extraction  
+⬇  
+Machine Learning Model (LinearSVC)  
+⬇  
+Sentiment Prediction
+""")
+
+# ---------------------------
+# Model Information
+# ---------------------------
+st.subheader("Model Information")
+
+st.write("Model Type: LinearSVC")
+st.write("Vectorization: TF-IDF")
+
+vocab_size = len(vectorizer.get_feature_names_out())
+
+st.write("Vocabulary Size:", vocab_size)
 
 # ---------------------------
 # Example Buttons
 # ---------------------------
-st.subheader("Try Example Comments")
+st.subheader("Example Comments")
 
-col1, col2, col3 = st.columns(3)
+col1,col2,col3 = st.columns(3)
 
 with col1:
     if st.button("Positive Example"):
-        st.session_state.input_text = "This car is amazing and very comfortable"
+        st.session_state.input = "This phone works perfectly"
 
 with col2:
     if st.button("Negative Example"):
-        st.session_state.input_text = "The maintenance cost is too high"
+        st.session_state.input = "The price is too expensive"
 
 with col3:
-    if st.button("Toxic Example"):
-        st.session_state.input_text = "This brand is trash and completely useless"
+    if st.button("Neutral Example"):
+        st.session_state.input = "The meeting is tomorrow"
 
 # ---------------------------
 # User Input
 # ---------------------------
-st.subheader("Enter Your Sentence")
+st.subheader("Enter Your Comment")
 
 user_input = st.text_area(
-    "Type your sentence here:",
-    value=st.session_state.input_text
+    "Type your sentence:",
+    value=st.session_state.get("input","")
 )
 
 # ---------------------------
 # Prediction
 # ---------------------------
-# ---------------------------
-# Prediction
-# ---------------------------
-if st.button("Predict Comment Type"):
+if st.button("Predict"):
 
-    if user_input.strip() != "":
+    if user_input.strip()!="":
 
-        st.subheader("🔎 NLP Processing Steps")
+        st.subheader("NLP Processing Steps")
 
-        text_lower = user_input.lower()
-
-        # ---------------------------
-        # Step 1 Original Text
-        # ---------------------------
+        # Original
         st.write("Original Text:")
         st.info(user_input)
 
-        # ---------------------------
-        # Step 2 Tokenization
-        # ---------------------------
-        tokens = text_lower.split()
+        # Tokenization
+        tokens = user_input.lower().split()
         st.write("Tokenization:")
         st.write(tokens)
 
-        # ---------------------------
-        # Step 3 Stopword Removal
-        # ---------------------------
-        tokens_no_stop = [word for word in tokens if word not in stop_words]
+        # Stopword removal
+        tokens_no_stop = [w for w in tokens if w not in stop_words]
         st.write("After Stopword Removal:")
         st.write(tokens_no_stop)
 
-        # ---------------------------
-        # Step 4 Lemmatization
-        # ---------------------------
-        lemmatized = [lemmatizer.lemmatize(word) for word in tokens_no_stop]
+        # Lemmatization
+        lemmas = [lemmatizer.lemmatize(w) for w in tokens_no_stop]
         st.write("After Lemmatization:")
-        st.write(lemmatized)
+        st.write(lemmas)
 
-        # ---------------------------
-        # Step 5 Cleaned Text
-        # ---------------------------
-        cleaned = " ".join(lemmatized)
+        # Cleaned text
+        cleaned = " ".join(lemmas)
         st.write("Cleaned Text:")
         st.info(cleaned)
 
-        # ---------------------------
-        # Prediction Logic
-        # ---------------------------
-        confidence = 0.0
-        if any(word in text_lower for word in toxic_words):
+        # TF-IDF vector
+        input_vector = vectorizer.transform([cleaned])
 
-            prediction = "Toxic"
-            confidence = 1.0
-            
-        elif any(word in tokens for word in positive_words) and any(word in text_lower for word in negative_words):
-            
-            prediction = "Neutral"
-            confidence = 0.8
-            
-        elif "lower" in tokens and "price" in tokens:
-            prediction = "Positive"
+        st.write("TF-IDF Vector Shape:")
+        st.write(input_vector.shape)
 
-        elif "higher" in tokens and "price" in tokens:
-            prediction = "Negative"
+        st.write("TF-IDF Vector Sample:")
+        st.write(input_vector.toarray()[0][:20])
 
-        elif any(word in text_lower for word in negative_words):
+        # Top Features
+        feature_names = vectorizer.get_feature_names_out()
 
-            prediction = "Negative"
-            confidence = 0.9
-        elif any(word in tokens for word in positive_words):
-   
-            prediction = "Positive"
-            confidence = 0.9
-            
-        
-        else:
+        nonzero = input_vector.nonzero()[1]
 
-            input_vector = vectorizer.transform([cleaned])
+        top_features = [feature_names[i] for i in nonzero[:10]]
 
-            st.write("TF-IDF Vector Shape:")
-            st.write(input_vector.shape)
+        st.write("Top TF-IDF Features:")
+        st.write(top_features)
 
-            prediction = model.predict(input_vector)[0]
+        # Prediction
+        prediction = model.predict(input_vector)[0]
 
-            decision_scores = model.decision_function(input_vector)
-            confidence = float(np.max(np.abs(decision_scores)))
+        # Confidence
+        decision_scores = model.decision_function(input_vector)
 
-            if prediction == "Toxic":
-                prediction = "Neutral"
+        confidence = float(np.max(np.abs(decision_scores)))
 
-        # ---------------------------
-        # Display Result
-        # ---------------------------
+        # Display
         st.subheader("Prediction Result")
 
-        if prediction == "Positive":
+        if prediction == 2:
             st.success("🟢 Positive")
 
-        elif prediction == "Negative":
+        elif prediction == 0:
             st.warning("🟠 Negative")
 
-        elif prediction == "Neutral":
+        else:
             st.info("⚪ Neutral")
 
-        else:
-            st.error("🔴 Toxic")
+        st.write("Confidence Score:",round(confidence,2))
 
-        st.write(f"Confidence Score: {round(confidence,2)}")
-
-        st.session_state.history.append((user_input, prediction))
+        st.session_state.history.append((user_input,prediction))
 
     else:
-        st.warning("Please enter a sentence.")
+        st.warning("Please enter text")
 
 # ---------------------------
 # Prediction History
 # ---------------------------
-if len(st.session_state.history) > 0:
+if len(st.session_state.history)>0:
 
-    st.subheader("Prediction History (Last 5)")
+    st.subheader("Prediction History")
 
-    for i, (text, pred) in enumerate(
+    for i,(text,pred) in enumerate(
         reversed(st.session_state.history[-5:])
     ):
-        st.write(f"{i+1}. {text} → {pred}")
+
+        st.write(f"{i+1}. {text}")
 
 # ---------------------------
 # Statistics Chart
 # ---------------------------
-if len(st.session_state.history) > 0:
+if len(st.session_state.history)>0:
 
     counts = {
         "Positive":0,
         "Negative":0,
-        "Toxic":0,
         "Neutral":0
     }
 
-    for _, pred in st.session_state.history:
-        counts[pred] += 1
+    for _,pred in st.session_state.history:
 
-    st.subheader("📊 Prediction Statistics")
+        if pred==2:
+            counts["Positive"]+=1
+        elif pred==0:
+            counts["Negative"]+=1
+        else:
+            counts["Neutral"]+=1
 
-    fig, ax = plt.subplots()
+    st.subheader("Prediction Statistics")
+
+    fig,ax = plt.subplots()
+
+    colors = ["green","orange","gray"]
 
     ax.bar(
         counts.keys(),
-        counts.values()
+        counts.values(),
+        color=colors
     )
 
-    ax.set_ylabel("Number of Predictions")
-    ax.set_title("Prediction Distribution")
+    ax.set_ylabel("Predictions")
+    ax.set_title("Sentiment Distribution")
 
     st.pyplot(fig)
