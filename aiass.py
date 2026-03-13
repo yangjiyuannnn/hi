@@ -42,7 +42,7 @@ def clean_text(text):
 
     text = text.lower()
     text = text.replace("not bad","not_bad")
-    text = text.replace("no bad","not_bad")
+    text = text.replace("no bad","no_bad")
     text = text.replace("no problem","no_problem")
     text = re.sub(r"http\S+","",text)
     text = re.sub(r"@\w+","",text)
