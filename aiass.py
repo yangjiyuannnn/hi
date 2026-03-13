@@ -244,10 +244,10 @@ if len(st.session_state.history) > 0:
     for _,pred in st.session_state.history:
 
         if pred == "2":
-            counts["Positive"] += 1
+            counts["2"] += 1
 
         elif pred == "0":
-            counts["Negative"] += 1
+            counts["0"] += 1
 
         else:
             counts["Neutral"] += 1
