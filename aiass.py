@@ -195,10 +195,10 @@ if st.button("Predict"):
         # ---------------------------
         st.subheader("Prediction Result")
 
-        if prediction == "Positive":
+        if prediction == "2":
             st.success("🟢 Positive Sentiment")
 
-        elif prediction == "Negative":
+        elif prediction == "0":
             st.warning("🟠 Negative Sentiment")
 
         else:
@@ -243,10 +243,10 @@ if len(st.session_state.history) > 0:
 
     for _,pred in st.session_state.history:
 
-        if pred == "Positive":
+        if pred == "2":
             counts["Positive"] += 1
 
-        elif pred == "Negative":
+        elif pred == "0":
             counts["Negative"] += 1
 
         else:
