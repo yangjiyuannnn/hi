@@ -34,102 +34,6 @@ from sklearn.metrics import accuracy_score, classification_report
 
 
 
-df1 = df1.rename(columns={"clean_text":"text","category":"label"})
-
-df1["label"] = df1["label"].replace({
-    -1:0,   # negative
-    0:1,    # neutral
-    1:2     # positive
-})
-
-df2 = df2.rename(columns={"sentence":"text"})
-df2["label"] = 2
-
-df3 = df3.rename(columns={"sentence":"text"})
-df3["label"] = 0
-
-df_sentiment = pd.concat([df1, df2, df3])
-
-df_sentiment = df_sentiment[["text","label"]]
-
-df_sentiment = df_sentiment.dropna()
-
-stop_words = set(stopwords.words("english"))
-stop_words = stop_words - {"no","not","never"}
-
-def clean_text(text):
-
-    text = str(text).lower()
-    text = text.replace("not bad","not_bad")
-    text = text.replace("no bad","not_bad")
-    text = text.replace("no problem","no_problem")
-    text = re.sub(r"http\S+","",text)
-    text = re.sub(r"@\w+","",text)
-    text = re.sub(r"#\w+","",text)
-
-    text = re.sub(r"[^a-z\s]","",text)
-
-    words = text.split()
-
-    words = [w for w in words if w not in stop_words]
-
-    return " ".join(words)
-
-df_sentiment["clean_text"] = df_sentiment["text"].apply(clean_text)
-
-df_all = pd.concat([
-    df_sentiment[["clean_text","label"]],
-])
-
-df_all = df_all.dropna()
-
-vectorizer = TfidfVectorizer(
-    ngram_range=(1,2),
-    min_df=5,
-    max_df=0.85,
-    sublinear_tf=True
-)
-
-X = vectorizer.fit_transform(df_all["clean_text"])
-
-y = df_all["label"]
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42,
-    stratify=y
-)
-
-nb_model = MultinomialNB()
-
-nb_model.fit(X_train, y_train)
-
-nb_pred = nb_model.predict(X_test)
-
-print("Naive Bayes Accuracy:", accuracy_score(y_test, nb_pred))
-print(classification_report(y_test, nb_pred))
-
-lr_model = LogisticRegression(max_iter=200)
-
-lr_model.fit(X_train, y_train)
-
-lr_pred = lr_model.predict(X_test)
-
-print("Logistic Regression Accuracy:", accuracy_score(y_test, lr_pred))
-print(classification_report(y_test, lr_pred))
-
-svm_model = LinearSVC(class_weight="balanced")
-
-svm_model.fit(X_train, y_train)
-
-svm_pred = svm_model.predict(X_test)
-
-print("SVM Accuracy:", accuracy_score(y_test, svm_pred))
-print(classification_report(y_test, svm_pred))
-
-print(df_all["label"].value_counts())
 
 labels = {
     0: "Negative",
@@ -161,8 +65,4 @@ print(detect_comment("The meeting is tomorrow"))
 print(detect_comment("99"))
 print(detect_comment("??"))
 
-pickle.dump(svm_model, open("final_model.pkl", "wb"))
-pickle.dump(vectorizer, open("tfidf_vectorizer.pkl", "wb"))
 
-from joblib import dump, load
-dump(svm_model, 'svm_model.joblib')
