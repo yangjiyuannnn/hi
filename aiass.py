@@ -6,7 +6,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 
@@ -20,11 +19,9 @@ vectorizer = pickle.load(open("tfidf_vectorizer.pkl","rb"))
 # NLTK Setup
 # ---------------------------
 nltk.download("stopwords",quiet=True)
-nltk.download("wordnet",quiet=True)
 
 stop_words = set(stopwords.words("english"))
 stop_words = stop_words - {"no","not","never"}
-lemmatizer = WordNetLemmatizer()
 
 # ---------------------------
 # Session State
@@ -36,14 +33,16 @@ if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
 # ---------------------------
-# Clean Text
+# Clean Text (SAME AS COLAB)
 # ---------------------------
 def clean_text(text):
 
     text = str(text).lower()
+
     text = text.replace("not bad","not_bad")
     text = text.replace("no bad","not_bad")
     text = text.replace("no problem","no_problem")
+
     text = re.sub(r"http\S+","",text)
     text = re.sub(r"@\w+","",text)
     text = re.sub(r"#\w+","",text)
@@ -55,7 +54,6 @@ def clean_text(text):
     words = [w for w in words if w not in stop_words]
 
     return " ".join(words)
-
 
 # ---------------------------
 # Title
@@ -69,7 +67,7 @@ st.markdown("""
 🟠 Negative  
 ⚪ Neutral  
 
-Model Used: **LinearSVC**  
+Model: **LinearSVC**  
 Feature Extraction: **TF-IDF**
 """)
 
@@ -91,15 +89,15 @@ Sentiment Prediction
 """)
 
 # ---------------------------
-# Model Info
+# Model Information
 # ---------------------------
 st.subheader("Model Information")
 
 vocab_size = len(vectorizer.get_feature_names_out())
 
-st.write("Model Type: LinearSVC")
+st.write("Model Type:", "LinearSVC")
 st.write("Vocabulary Size:", vocab_size)
-st.write("Feature Type: TF-IDF")
+st.write("Feature Type:", "TF-IDF (Unigram + Bigram)")
 
 # ---------------------------
 # Example Buttons
@@ -140,47 +138,36 @@ if st.button("Predict"):
         st.subheader("NLP Processing Steps")
 
         # Original text
-        st.write("Original Text:")
+        st.write("Original Text")
         st.info(user_input)
 
         # Tokenization
         tokens = user_input.lower().split()
-        st.write("Tokenization:")
+        st.write("Tokenization")
         st.write(tokens)
 
-        # Stopword removal
-        tokens_no_stop = [w for w in tokens if w not in stop_words]
-        st.write("After Stopword Removal:")
-        st.write(tokens_no_stop)
+        # Cleaned text (same preprocessing as training)
+        cleaned = clean_text(user_input)
 
-        # Lemmatization
-        lemmas = [lemmatizer.lemmatize(w) for w in tokens_no_stop]
-        st.write("After Lemmatization:")
-        st.write(lemmas)
-
-        # Cleaned text
-        cleaned = " ".join(lemmas)
-        st.write("Cleaned Text:")
+        st.write("Cleaned Text")
         st.info(cleaned)
 
         # TF-IDF vector
         input_vector = vectorizer.transform([cleaned])
 
-        st.write("TF-IDF Vector Shape:")
+        st.write("TF-IDF Vector Shape")
         st.write(input_vector.shape)
 
-        # Vocabulary check
+        # vocabulary check
         if input_vector.nnz == 0:
             st.warning("⚠ Words not found in vocabulary")
 
         # Top features
         feature_names = vectorizer.get_feature_names_out()
-
         nonzero = input_vector.nonzero()[1]
-
         top_features = [feature_names[i] for i in nonzero[:10]]
 
-        st.write("Top Influential Words:")
+        st.write("Top Influential Words")
 
         for word in top_features:
             st.write("•",word)
@@ -191,7 +178,6 @@ if st.button("Predict"):
         prediction = model.predict(input_vector)[0]
 
         decision_scores = model.decision_function(input_vector)
-
         confidence = float(np.max(np.abs(decision_scores)))
 
         # ---------------------------
@@ -213,8 +199,7 @@ if st.button("Predict"):
 
         st.write("Confidence Score:",round(confidence,2))
 
-        confidence_norm = min(confidence / 2,1)
-
+        confidence_norm = min(confidence/2,1)
         st.progress(confidence_norm)
 
         st.caption("Prediction Confidence")
@@ -251,10 +236,8 @@ if len(st.session_state.history) > 0:
 
         if pred == 2:
             counts["Positive"] += 1
-
         elif pred == 0:
             counts["Negative"] += 1
-
         else:
             counts["Neutral"] += 1
 
@@ -278,7 +261,7 @@ if len(st.session_state.history) > 0:
 # ---------------------------
 if len(st.session_state.history) > 5:
 
-    st.subheader("Demo Confusion Matrix (Example)")
+    st.subheader("Demo Confusion Matrix")
 
     y_true = [x[1] for x in st.session_state.history]
     y_pred = [x[1] for x in st.session_state.history]
