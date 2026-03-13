@@ -23,6 +23,7 @@ nltk.download("stopwords",quiet=True)
 nltk.download("wordnet",quiet=True)
 
 stop_words = set(stopwords.words("english"))
+stop_words = stop_words - {"no","not","never"}
 lemmatizer = WordNetLemmatizer()
 
 # ---------------------------
@@ -40,9 +41,14 @@ if "input_text" not in st.session_state:
 def clean_text(text):
 
     text = text.lower()
-
+    text = text.replace("not bad","not_bad")
+    text = text.replace("no bad","not_bad")
+    text = text.replace("no problem","no_problem")
     text = re.sub(r"http\S+","",text)
-    text = re.sub(r"[^a-zA-Z\s]","",text)
+    text = re.sub(r"@\w+","",text)
+    text = re.sub(r"#\w+","",text)
+
+    text = re.sub(r"[^a-z\s]","",text)
 
     words = text.split()
 
@@ -163,9 +169,6 @@ if st.button("Predict"):
 
         st.write("TF-IDF Vector Shape:")
         st.write(input_vector.shape)
-
-        st.write("TF-IDF Vector Sample:")
-        st.write(input_vector.toarray()[0][:20])
 
         # Vocabulary check
         if input_vector.nnz == 0:
