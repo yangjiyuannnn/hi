@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
 
 # ---------------------------
 # Load Model
@@ -33,7 +35,7 @@ if "input_text" not in st.session_state:
     st.session_state.input_text = ""
 
 # ---------------------------
-# Text Cleaning
+# Clean Text
 # ---------------------------
 def clean_text(text):
 
@@ -56,14 +58,14 @@ def clean_text(text):
 st.title("NLP Review Classification System")
 
 st.markdown("""
-This NLP system classifies text into:
+### Sentiment Categories
 
-- 🟢 **Positive**
-- 🟠 **Negative**
-- ⚪ **Neutral**
+🟢 Positive  
+🟠 Negative  
+⚪ Neutral  
 
 Model Used: **LinearSVC**  
-Vectorization: **TF-IDF**
+Feature Extraction: **TF-IDF**
 """)
 
 # ---------------------------
@@ -88,12 +90,10 @@ Sentiment Prediction
 # ---------------------------
 st.subheader("Model Information")
 
-st.write("Model Type: LinearSVC")
-
 vocab_size = len(vectorizer.get_feature_names_out())
 
+st.write("Model Type: LinearSVC")
 st.write("Vocabulary Size:", vocab_size)
-
 st.write("Feature Type: TF-IDF")
 
 # ---------------------------
@@ -158,7 +158,7 @@ if st.button("Predict"):
         st.write("Cleaned Text:")
         st.info(cleaned)
 
-        # TF-IDF
+        # TF-IDF vector
         input_vector = vectorizer.transform([cleaned])
 
         st.write("TF-IDF Vector Shape:")
@@ -169,7 +169,7 @@ if st.button("Predict"):
 
         # Vocabulary check
         if input_vector.nnz == 0:
-            st.warning("⚠ No known vocabulary detected")
+            st.warning("⚠ Words not found in vocabulary")
 
         # Top features
         feature_names = vectorizer.get_feature_names_out()
@@ -183,8 +183,10 @@ if st.button("Predict"):
         for word in top_features:
             st.write("•",word)
 
-        # Prediction
-        prediction = str(model.predict(input_vector)[0])
+        # ---------------------------
+        # Model Prediction
+        # ---------------------------
+        prediction = model.predict(input_vector)[0]
 
         decision_scores = model.decision_function(input_vector)
 
@@ -195,25 +197,27 @@ if st.button("Predict"):
         # ---------------------------
         st.subheader("Prediction Result")
 
-        if prediction == "2":
+        if prediction == 2:
+            label = "Positive"
             st.success("🟢 Positive Sentiment")
 
-        elif prediction == "0":
+        elif prediction == 0:
+            label = "Negative"
             st.warning("🟠 Negative Sentiment")
 
         else:
+            label = "Neutral"
             st.info("⚪ Neutral Statement")
 
         st.write("Confidence Score:",round(confidence,2))
 
-        # Confidence bar
-        confidence_norm = min(confidence / 2, 1)
+        confidence_norm = min(confidence / 2,1)
 
         st.progress(confidence_norm)
 
         st.caption("Prediction Confidence")
 
-        st.session_state.history.append((user_input,prediction))
+        st.session_state.history.append((user_input,prediction,label))
 
     else:
         st.warning("Please enter text")
@@ -225,10 +229,10 @@ if len(st.session_state.history) > 0:
 
     st.subheader("Prediction History")
 
-    for i,(text,pred) in enumerate(
+    for i,(text,_,label) in enumerate(
         reversed(st.session_state.history[-5:])
     ):
-        st.write(f"{i+1}. {text} → {pred}")
+        st.write(f"{i+1}. {text} → {label}")
 
 # ---------------------------
 # Statistics Chart
@@ -241,13 +245,13 @@ if len(st.session_state.history) > 0:
         "Neutral":0
     }
 
-    for _,pred in st.session_state.history:
+    for _,pred,_ in st.session_state.history:
 
-        if pred == "2":
-            counts["2"] += 1
+        if pred == 2:
+            counts["Positive"] += 1
 
-        elif pred == "0":
-            counts["0"] += 1
+        elif pred == 0:
+            counts["Negative"] += 1
 
         else:
             counts["Neutral"] += 1
@@ -256,16 +260,34 @@ if len(st.session_state.history) > 0:
 
     fig,ax = plt.subplots()
 
-    colors = ["#2ecc71","#e67e22","#95a5a6"]
-
     ax.bar(
         counts.keys(),
         counts.values(),
-        color=colors
+        color=["#2ecc71","#e67e22","#95a5a6"]
     )
 
     ax.set_ylabel("Number of Predictions")
-
     ax.set_title("Sentiment Distribution")
+
+    st.pyplot(fig)
+
+# ---------------------------
+# Confusion Matrix Demo
+# ---------------------------
+if len(st.session_state.history) > 5:
+
+    st.subheader("Demo Confusion Matrix (Example)")
+
+    y_true = [x[1] for x in st.session_state.history]
+    y_pred = [x[1] for x in st.session_state.history]
+
+    cm = confusion_matrix(y_true,y_pred)
+
+    fig,ax = plt.subplots()
+
+    sns.heatmap(cm,annot=True,fmt="d",cmap="Blues",ax=ax)
+
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
 
     st.pyplot(fig)
