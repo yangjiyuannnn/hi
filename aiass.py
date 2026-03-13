@@ -32,9 +32,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, classification_report
 
-df1 = pd.read_csv("Twitter_Data.csv")
-df2 = pd.read_csv("p.csv")
-df3 = pd.read_csv("n.csv")
+
 
 df1 = df1.rename(columns={"clean_text":"text","category":"label"})
 
