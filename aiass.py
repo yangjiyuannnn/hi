@@ -100,7 +100,7 @@ st.write("Vocabulary Size:", vocab_size)
 
 st.markdown("### Model Comparison")
 model_df = pd.DataFrame({
-    "Model": ["Naive Bayes", "Logistic Regression", "LinearSVC"],
+    "Model": ["Naive Bayes", "Logistic Regression", "SVM"],
     "Accuracy": [0.70, 0.89, 0.91]
 })
 
@@ -118,7 +118,7 @@ st.markdown("""
 - Recall: 0.89
 - F1-score: 0.89
 
-**LinearSVC**
+**SVM**
 - Precision: 0.91
 - Recall: 0.91
 - F1-score: 0.91
