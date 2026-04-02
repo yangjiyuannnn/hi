@@ -95,9 +95,40 @@ st.subheader("Model Information")
 
 vocab_size = len(vectorizer.get_feature_names_out())
 
-st.write("Model Type:", "LinearSVC")
-st.write("Vocabulary Size:", vocab_size)
 st.write("Feature Type:", "TF-IDF (Unigram + Bigram)")
+st.write("Vocabulary Size:", vocab_size)
+
+st.markdown("### Model Comparison")
+
+st.write("Naive Bayes Accuracy: 0.70")
+st.write("Logistic Regression Accuracy: 0.89")
+st.write("LinearSVC Accuracy: 0.91")
+
+st.markdown("### Model Performance Details")
+
+st.markdown("""
+**Naive Bayes**
+- Precision: 0.75
+- Recall: 0.70
+- F1-score: 0.69
+
+**Logistic Regression**
+- Precision: 0.89
+- Recall: 0.89
+- F1-score: 0.89
+
+**LinearSVC**
+- Precision: 0.91
+- Recall: 0.91
+- F1-score: 0.91
+""")
+
+model_df = pd.DataFrame({
+    "Model": ["Naive Bayes", "Logistic Regression", "LinearSVC"],
+    "Accuracy": [0.70, 0.89, 0.91]
+})
+
+st.table(model_df)
 
 # ---------------------------
 # Example Buttons
