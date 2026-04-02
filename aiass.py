@@ -99,10 +99,6 @@ st.write("Feature Type:", "TF-IDF (Unigram + Bigram)")
 st.write("Vocabulary Size:", vocab_size)
 
 st.markdown("### Model Comparison")
-
-st.write("Naive Bayes Accuracy: 0.70")
-st.write("Logistic Regression Accuracy: 0.89")
-st.write("LinearSVC Accuracy: 0.91")
 model_df = pd.DataFrame({
     "Model": ["Naive Bayes", "Logistic Regression", "LinearSVC"],
     "Accuracy": [0.70, 0.89, 0.91]
